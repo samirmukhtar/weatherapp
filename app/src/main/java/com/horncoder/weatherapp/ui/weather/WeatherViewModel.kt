@@ -1,29 +1,32 @@
 package com.horncoder.weatherapp.ui.weather
 
-import android.util.Log
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.horncoder.weatherapp.model.WeatherRepository
-import com.horncoder.weatherapp.model.response.Constant
-import com.horncoder.weatherapp.model.response.Location
+import com.horncoder.weatherapp.model.api.NetworkResponse
 import com.horncoder.weatherapp.model.response.WeatherResponse
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import retrofit2.Response
 
-class WeatherViewModel(private val repository: WeatherRepository = WeatherRepository()): ViewModel() {
+class WeatherViewModel(private val repository: WeatherRepository = WeatherRepository()) :
+    ViewModel() {
+    private val _weatherResult = MutableLiveData<NetworkResponse<WeatherResponse>>()
+    val weatherResult: LiveData<NetworkResponse<WeatherResponse>> = _weatherResult
 
+    suspend fun getData(city: String): Response<WeatherResponse> {
+        _weatherResult.value = NetworkResponse.Loading
+        try {
+            val response = repository.getWeather(city)
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    _weatherResult.value = NetworkResponse.Success(it)
+                }
 
-    suspend fun getData(city: String): Response<WeatherResponse>{
-
-        val response = repository.getWeather(city)
-        if (response.isSuccessful){
-            Log.d("City", response.body().toString())
-
-        } else {
-            Log.d("City", response.message())
+            } else {
+                _weatherResult.value = NetworkResponse.Error("Failed to load data!")
+            }
+        } catch (e: Exception) {
+            _weatherResult.value = NetworkResponse.Error("Failed to load data!")
         }
         return repository.getWeather(city)
     }
