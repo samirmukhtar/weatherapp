@@ -58,8 +58,8 @@ dependencies {
     implementation ("androidx.compose.material:material-icons-extended")
 
 
-    //ImageLaoding
-//    implementation("io.coil-kt:coil-compose:2.2.2")
+//    ImageLaoding
+    implementation("io.coil-kt:coil-compose:2.2.2")
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
